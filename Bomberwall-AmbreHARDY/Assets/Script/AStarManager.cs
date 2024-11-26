@@ -9,6 +9,7 @@ public class AStarManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        Time.timeScale = 1.0f;
     }
 
     public List<Nodes> GeneratePath(Nodes start, Nodes end)

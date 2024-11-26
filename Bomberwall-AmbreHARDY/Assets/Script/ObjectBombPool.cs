@@ -25,7 +25,6 @@ public class ObjectBombPool : MonoBehaviour
             GameObject obj = Instantiate(_prefab);
             obj.SetActive(true);
             poolObjects.Add(obj);
-
         }
     }
 
