@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,8 +13,9 @@ public class PNGMovement : MonoBehaviour
     private int _numberBomb;
     private bool _fonctionne = true;
     [SerializeField] private Image _image;
-
+    [SerializeField] private AudioSource _audioSource;
     [SerializeField] private float _speed;
+    private bool _canDust = true;
 
     private void Awake()
     {
@@ -36,6 +38,8 @@ public class PNGMovement : MonoBehaviour
         {
             int x = 0;
             transform.position = Vector3.MoveTowards(transform.position, new Vector3(ListChemin[x].transform.position.x, ListChemin[x].transform.position.y, -2), _speed * Time.deltaTime);
+            
+            if (_canDust) StartCoroutine(Dust());
 
             if (Vector2.Distance(transform.position, ListChemin[x].transform.position) < 0.1f)
             {
@@ -56,19 +60,38 @@ public class PNGMovement : MonoBehaviour
                 }
             }
         }
+
         else if (_canBomb >= _numberBomb || FindAnyObjectByType<ObjectBomb>() == null && _fonctionne)
         {
             ListChemin = AStarManager.Instance.GeneratePath(currentNodes, _nodePlaceBomb);
             _fonctionne = false;
         }
+
         else if (FindAnyObjectByType<ObjectBomb>() != null)
         {
-            ObjectBomb[] objectbomb = FindObjectsOfType<ObjectBomb>();
+            ObjectBomb[] objectbombs = FindObjectsOfType<ObjectBomb>();
+            ObjectBomb targetBomb = null;
+            float shortestDistance = float.MaxValue;
+
+            foreach (ObjectBomb bomb in objectbombs)
+            {
+                float distance = Vector3.Distance(transform.position, bomb.transform.position);
+                if (distance < shortestDistance)
+                {
+                    shortestDistance = distance;
+                    targetBomb = bomb;
+                }
+            }
+
             while (ListChemin == null || ListChemin.Count == 0)
             {
-                ListChemin = AStarManager.Instance.GeneratePath(currentNodes, objectbomb[Random.Range(0, objectbomb.Length)].Nodes);
+                if (targetBomb != null)
+                {
+                    ListChemin = AStarManager.Instance.GeneratePath(currentNodes, targetBomb.Nodes);
+                }
             }
         }
+
         else
         {
             Nodes[] nodes = FindObjectsOfType<Nodes>();
@@ -77,6 +100,22 @@ public class PNGMovement : MonoBehaviour
                 ListChemin = AStarManager.Instance.GeneratePath(currentNodes, nodes[Random.Range(0, nodes.Length)]);
             }
         }
+    }
+
+    IEnumerator Dust()
+    {
+        GameObject dust = DustPool.Instance.GetPooledObject();
+
+        if (dust != null)
+        {
+            dust.transform.position = transform.position;
+            dust.SetActive(true);
+            _canDust = false;
+            _audioSource.Play();
+        }
+        yield return new WaitForSeconds(0.5f);
+        dust.SetActive(false);
+        _canDust = true;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

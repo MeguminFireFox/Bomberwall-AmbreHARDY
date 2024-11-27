@@ -1,13 +1,15 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class UseBomb : MonoBehaviour
 {
-    private bool _canBomb = false;
+    private int _canBomb = 0;
+    [SerializeField] private Image _image;
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        if (!_canBomb) return;
+        if (_canBomb <= 0) return;
 
         if (context.performed)
         {
@@ -17,18 +19,18 @@ public class UseBomb : MonoBehaviour
             {
                 bomb.transform.position = transform.position;
                 bomb.SetActive(true);
-                _canBomb = false;
+                _canBomb -= 1;
+                _image.fillAmount -= 0.1666f;
             }
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (_canBomb) return;
-
         if (collision.tag == "ObjectBomb")
         {
-            _canBomb = true;
+            _canBomb += 1;
+            _image.fillAmount += 0.1666f;
             collision.gameObject.SetActive(false);
         }
     }

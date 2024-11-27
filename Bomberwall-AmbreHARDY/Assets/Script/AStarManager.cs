@@ -14,7 +14,7 @@ public class AStarManager : MonoBehaviour
 
     public List<Nodes> GeneratePath(Nodes start, Nodes end)
     {
-        Debug.Log(end);
+        // Liste pour stocker les nœuds en attente
         List<Nodes> ActiveList = new List<Nodes>();
 
         foreach (Nodes n in FindObjectsOfType<Nodes>())
@@ -30,6 +30,7 @@ public class AStarManager : MonoBehaviour
         {
             int lowestF = default;
 
+            // permet de claculer le pllus faible Fscore
             for (int i = 1; i < ActiveList.Count; i++)
             {
                 if (ActiveList[i].FScore() < ActiveList[lowestF].FScore())
@@ -38,15 +39,17 @@ public class AStarManager : MonoBehaviour
                 }
             }
 
+            // Sélectionne le nœud actuel avec le plus faible FScore
             Nodes currentNode = ActiveList[lowestF];
             ActiveList.Remove(currentNode);
 
+            // si la destination est trouvé
             if (currentNode == end)
             {
                 List<Nodes> path = new List<Nodes>();
-
                 path.Insert(0, end);
 
+                // reconstitue le chemin en remontant la liste
                 while (currentNode != start)
                 {
                     currentNode = currentNode.CameFrom;
@@ -57,6 +60,7 @@ public class AStarManager : MonoBehaviour
                 return path;
             }
 
+            // Recherche quel et le meilleur noed voisin de celui selectionné
             foreach (Nodes connectNode in currentNode.Connections)
             {
                 float heldGScore = currentNode.GScore + Vector2.Distance(currentNode.transform.position, connectNode.transform.position);
